@@ -26,7 +26,6 @@ jobs:
         env:
           STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
           STEAM_ID: ${{ secrets.STEAM_ID }}
-          STEAM_ID_1: ${{ secrets.STEAM_ID_1 }}
           STEAM_ID_2: ${{ secrets.STEAM_ID_2 }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
