@@ -406,8 +406,8 @@ async function main() {
 
     // Display Name with identical clean hearts
     const formattedDisplayName = steamId2 && player2
-        ? `${cleanName1} \n${cleanName2} ‎ ‎ `
-        : `${cleanName1} ♡𓆪`;
+        ? `${cleanName1} ‎ ‎ ‎ ‎ ‎ \‎n${cleanName2} ‎  `
+        : `${cleanName1} `;
 
     // Console Summary
 
