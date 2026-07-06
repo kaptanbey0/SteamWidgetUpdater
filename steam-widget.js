@@ -246,6 +246,11 @@ function calculateXpProgress(badgesResponse, fallbackLevel) {
 
 
 
+function getCleanNickname(name) {
+    if (!name) return "";
+    return name.replace(/[^\p{L}\p{N}\s\-_]/gu, "").replace(/\s+/g, " ").trim();
+}
+
 // Discord Widget Updater
 
 async function updateDiscordWidget(widget) {
@@ -396,10 +401,13 @@ async function main() {
     const cs2Hours2 = Math.round(cs2Playtime2 / 60);
     const cs2HoursStr2 = steamId2 ? `${cs2Hours2.toLocaleString("de-DE")}h` : "0h";
 
-    // Display Name without levels
+    const cleanName1 = getCleanNickname(player?.personaname || "Main");
+    const cleanName2 = player2 ? getCleanNickname(player2.personaname) : "CS";
+
+    // Display Name with identical clean hearts
     const formattedDisplayName = steamId2 && player2
-        ? `${player?.personaname || "Main"}\n${player2.personaname}`
-        : (player?.personaname || "Unknown");
+        ? `${cleanName1} 𓆩♡𓆪\n${cleanName2} 𓆩♡𓆪`
+        : `${cleanName1} 𓆩♡𓆪`;
 
     // Console Summary
 
