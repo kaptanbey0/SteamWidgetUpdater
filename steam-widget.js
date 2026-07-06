@@ -404,10 +404,10 @@ async function main() {
     const cleanName1 = getCleanNickname(player?.personaname || "Main");
     const cleanName2 = player2 ? getCleanNickname(player2.personaname) : "CS";
 
-    // Display Name with identical clean hearts
+    // Display Name with clean nicknames on separate lines
     const formattedDisplayName = steamId2 && player2
-        ? `${cleanName1} ‎ ‎ ‎ ‎ ‎ \‎n${cleanName2} ‎  `
-        : `${cleanName1} `;
+        ? `${cleanName1}\n${cleanName2}`
+        : cleanName1;
 
     // Console Summary
 
