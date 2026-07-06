@@ -404,9 +404,9 @@ async function main() {
     const cleanName1 = getCleanNickname(player?.personaname || "Main");
     const cleanName2 = player2 ? getCleanNickname(player2.personaname) : "CS";
 
-    // Display Name with clean nicknames on separate lines
+    // Display Name with spaces to force wrapping on Discord UI
     const formattedDisplayName = steamId2 && player2
-        ? `${cleanName1}\n${cleanName2}`
+        ? `${cleanName1}${" ".repeat(26)}${cleanName2}`
         : cleanName1;
 
     // Console Summary
