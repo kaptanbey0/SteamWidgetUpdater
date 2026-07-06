@@ -401,10 +401,13 @@ async function main() {
     const cs2Hours2 = Math.round(cs2Playtime2 / 60);
     const cs2HoursStr2 = steamId2 ? `${cs2Hours2.toLocaleString("de-DE")}h` : "0h";
 
-    // Display Name using raw usernames separated by a pipe
+    const cleanName1 = getCleanNickname(player?.personaname || "Main");
+    const cleanName2 = player2 ? getCleanNickname(player2.personaname) : "CS";
+
+    // Display Name with heart at the beginning of Main and at the end of CS, separated by a pipe
     const formattedDisplayName = steamId2 && player2
-        ? `${player?.personaname || "Main"}  |  ${player2.personaname}`
-        : (player?.personaname || "Unknown");
+        ? `𓆩♡𓆪 ${cleanName1}  |  ${cleanName2} 𓆩♡𓆪`
+        : `𓆩♡𓆪 ${cleanName1} 𓆩♡𓆪`;
 
     // Console Summary
 
