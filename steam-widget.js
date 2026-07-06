@@ -379,8 +379,6 @@ async function main() {
     );
     const playtimeHours1 = Math.round(totalMinutes1 / 60);
     const playtimeHoursStr1 = `${playtimeHours1.toLocaleString("de-DE")}h`;
-    const steamLevel1 = level.response.player_level || 0;
-    const xpProgress1 = calculateXpProgress(badges.response, steamLevel1);
 
     // Account 2 (CS) Parsing
     const games2 = owned2.response.games || [];
@@ -391,21 +389,17 @@ async function main() {
     );
     const playtimeHours2 = Math.round(totalMinutes2 / 60);
     const playtimeHoursStr2 = steamId2 ? `${playtimeHours2.toLocaleString("de-DE")}h` : "0h";
-    const steamLevel2 = level2.response.player_level || 0;
-    const xpProgress2 = steamId2 
-        ? calculateXpProgress(badges2.response, steamLevel2) 
-        : "N/A";
 
-    // CS2 Playtime (AppID 730) lookup (checks Account 2, falls back to Account 1)
-    const cs2Game = games2.find(g => g.appid === 730) || games1.find(g => g.appid === 730);
-    const cs2PlaytimeForever = cs2Game ? cs2Game.playtime_forever || 0 : 0;
-    const cs2Hours = Math.round(cs2PlaytimeForever / 60);
-    const cs2HoursString = `${cs2Hours.toLocaleString("de-DE")}h`;
+    // CS2 Playtime (AppID 730) calculation for CS account (Account 2)
+    const cs2Game2 = games2.find(g => g.appid === 730);
+    const cs2Playtime2 = cs2Game2 ? cs2Game2.playtime_forever || 0 : 0;
+    const cs2Hours2 = Math.round(cs2Playtime2 / 60);
+    const cs2HoursStr2 = steamId2 ? `${cs2Hours2.toLocaleString("de-DE")}h` : "0h";
 
-    // Display Name with levels and newlines
+    // Display Name without levels
     const formattedDisplayName = steamId2 && player2
-        ? `${player?.personaname || "Main"} (Lvl ${steamLevel1})\n${player2.personaname} (Lvl ${steamLevel2})`
-        : `${player?.personaname || "Unknown"} (Lvl ${steamLevel1})`;
+        ? `${player?.personaname || "Main"}\n${player2.personaname}`
+        : (player?.personaname || "Unknown");
 
     // Console Summary
 
@@ -413,13 +407,11 @@ async function main() {
     log(`User:\n${formattedDisplayName}`);
     log(`Main Games: ${ownedGames1}`);
     log(`Main Playtime: ${playtimeHoursStr1}`);
-    log(`Main Progress: ${xpProgress1}`);
     log(`Main Age: ${profileAge}`);
     log(`CS Games: ${ownedGames2}`);
     log(`CS Playtime: ${playtimeHoursStr2}`);
-    log(`CS Progress: ${xpProgress2}`);
     log(`CS Age: ${profileAge2}`);
-    log(`CS2 Playtime: ${cs2HoursString}`);
+    log(`CS CS2 Playtime: ${cs2HoursStr2}`);
     log("-----------------------------");
 
     log("Building widget payload...");
@@ -434,18 +426,8 @@ async function main() {
                 },
                 {
                     type: 1,
-                    name: "xp_progress_1",
-                    value: xpProgress1
-                },
-                {
-                    type: 1,
-                    name: "xp_progress_2",
-                    value: xpProgress2
-                },
-                {
-                    type: 1,
-                    name: "cs2_hours",
-                    value: cs2HoursString
+                    name: "cs2_hours_2",
+                    value: cs2HoursStr2
                 },
                 {
                     type: 3,
