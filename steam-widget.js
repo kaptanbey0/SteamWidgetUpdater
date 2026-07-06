@@ -6,7 +6,6 @@
 const {
     STEAM_API_KEY,
     STEAM_ID,
-    STEAM_ID_1,
     STEAM_ID_2,
     BOT_TOKEN,
     APPLICATION_ID,
@@ -17,6 +16,7 @@ const {
 
 const requiredSecrets = [
     "STEAM_API_KEY",
+    "STEAM_ID",
     "BOT_TOKEN",
     "APPLICATION_ID",
     "DISCORD_USER_ID"
@@ -26,10 +26,6 @@ for (const secret of requiredSecrets) {
     if (!process.env[secret]) {
         throw new Error(`Missing GitHub Secret: ${secret}`);
     }
-}
-
-if (!process.env.STEAM_ID && !process.env.STEAM_ID_1) {
-    throw new Error("Missing GitHub Secret: STEAM_ID or STEAM_ID_1 must be defined");
 }
 
 // Logging
@@ -296,8 +292,8 @@ async function updateDiscordWidget(widget) {
 
 async function main() {
 
-    const steamId1 = process.env.STEAM_ID_1 || STEAM_ID;
-    const steamId2 = process.env.STEAM_ID_2 || null;
+    const steamId1 = STEAM_ID;
+    const steamId2 = STEAM_ID_2 || null;
 
     log("Fetching Steam data for Account 1...");
 
