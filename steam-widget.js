@@ -401,13 +401,10 @@ async function main() {
     const cs2Hours2 = Math.round(cs2Playtime2 / 60);
     const cs2HoursStr2 = steamId2 ? `${cs2Hours2.toLocaleString("de-DE")}h` : "0h";
 
-    const cleanName1 = getCleanNickname(player?.personaname || "Main");
-    const cleanName2 = player2 ? getCleanNickname(player2.personaname) : "CS";
-
-    // Display Name with spaces to force wrapping on Discord UI
+    // Display Name using raw usernames separated by a pipe
     const formattedDisplayName = steamId2 && player2
-        ? `${cleanName1}${" ".repeat(26)}${cleanName2}`
-        : cleanName1;
+        ? `${player?.personaname || "Main"}  |  ${player2.personaname}`
+        : (player?.personaname || "Unknown");
 
     // Console Summary
 
