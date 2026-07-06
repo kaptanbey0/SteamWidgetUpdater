@@ -134,7 +134,7 @@ async function getProfileAge(steamId) {
             years--;
         }
 
-        return `${years} Years`;
+        return `${years} Yrs`;
 
     }
 
@@ -331,6 +331,7 @@ async function main() {
     let owned2 = { response: {} };
     let level2 = { response: {} };
     let badges2 = { response: {} };
+    let profileAge2 = "N/A";
 
     if (steamId2) {
         log("Fetching Steam data for Account 2...");
@@ -338,7 +339,8 @@ async function main() {
             summary2Raw,
             owned2Raw,
             level2Raw,
-            badges2Raw
+            badges2Raw,
+            profileAge2Raw
         ] = await Promise.all([
             steam(
                 `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${STEAM_API_KEY}&steamids=${steamId2}`
@@ -351,12 +353,14 @@ async function main() {
             ),
             steam(
                 `https://api.steampowered.com/IPlayerService/GetBadges/v1/?key=${STEAM_API_KEY}&steamid=${steamId2}`
-            )
+            ),
+            getProfileAge(steamId2)
         ]);
         summary2 = summary2Raw;
         owned2 = owned2Raw;
         level2 = level2Raw;
         badges2 = badges2Raw;
+        profileAge2 = profileAge2Raw;
     }
 
     log("Calculating statistics...");
@@ -373,7 +377,8 @@ async function main() {
         (sum, game) => sum + (game.playtime_forever || 0),
         0
     );
-    const totalPlaytimeMs1 = totalMinutes1 * 60000;
+    const playtimeHours1 = Math.round(totalMinutes1 / 60);
+    const playtimeHoursStr1 = `${playtimeHours1.toLocaleString("de-DE")}h`;
     const steamLevel1 = level.response.player_level || 0;
     const xpProgress1 = calculateXpProgress(badges.response, steamLevel1);
 
@@ -384,7 +389,8 @@ async function main() {
         (sum, game) => sum + (game.playtime_forever || 0),
         0
     );
-    const totalPlaytimeMs2 = totalMinutes2 * 60000;
+    const playtimeHours2 = Math.round(totalMinutes2 / 60);
+    const playtimeHoursStr2 = steamId2 ? `${playtimeHours2.toLocaleString("de-DE")}h` : "0h";
     const steamLevel2 = level2.response.player_level || 0;
     const xpProgress2 = steamId2 
         ? calculateXpProgress(badges2.response, steamLevel2) 
@@ -394,27 +400,26 @@ async function main() {
     const cs2Game = games2.find(g => g.appid === 730) || games1.find(g => g.appid === 730);
     const cs2PlaytimeForever = cs2Game ? cs2Game.playtime_forever || 0 : 0;
     const cs2Hours = Math.round(cs2PlaytimeForever / 60);
-    const cs2HoursString = `${cs2Hours.toLocaleString()} Hours`;
+    const cs2HoursString = `${cs2Hours.toLocaleString("de-DE")}h`;
 
-    // Display Name with spacing and divider
+    // Display Name with levels and newlines
     const formattedDisplayName = steamId2 && player2
-        ? `${player?.personaname || "Main"}   |   ${player2.personaname}`
-        : (player?.personaname || "Unknown");
+        ? `${player?.personaname || "Main"} (Lvl ${steamLevel1})\n${player2.personaname} (Lvl ${steamLevel2})`
+        : `${player?.personaname || "Unknown"} (Lvl ${steamLevel1})`;
 
     // Console Summary
 
     log("-----------------------------");
-    log(`User: ${formattedDisplayName}`);
-    log(`Main Level: ${steamLevel1}`);
+    log(`User:\n${formattedDisplayName}`);
     log(`Main Games: ${ownedGames1}`);
-    log(`Main Playtime: ${Math.round(totalMinutes1 / 60)} hours`);
+    log(`Main Playtime: ${playtimeHoursStr1}`);
     log(`Main Progress: ${xpProgress1}`);
-    log(`CS Level: ${steamLevel2}`);
+    log(`Main Age: ${profileAge}`);
     log(`CS Games: ${ownedGames2}`);
-    log(`CS Playtime: ${Math.round(totalMinutes2 / 60)} hours`);
+    log(`CS Playtime: ${playtimeHoursStr2}`);
     log(`CS Progress: ${xpProgress2}`);
+    log(`CS Age: ${profileAge2}`);
     log(`CS2 Playtime: ${cs2HoursString}`);
-    log(`Profile Age: ${profileAge}`);
     log("-----------------------------");
 
     log("Building widget payload...");
@@ -455,14 +460,14 @@ async function main() {
                     value: ownedGames1
                 },
                 {
-                    type: 2,
+                    type: 1,
                     name: "playtime_1",
-                    value: totalPlaytimeMs1
+                    value: playtimeHoursStr1
                 },
                 {
                     type: 1,
-                    name: "main_level",
-                    value: `Lvl ${steamLevel1}`
+                    name: "main_age",
+                    value: profileAge
                 },
                 {
                     type: 2,
@@ -470,14 +475,14 @@ async function main() {
                     value: ownedGames2
                 },
                 {
-                    type: 2,
+                    type: 1,
                     name: "playtime_2",
-                    value: totalPlaytimeMs2
+                    value: playtimeHoursStr2
                 },
                 {
                     type: 1,
-                    name: "cs_level",
-                    value: steamId2 ? `Lvl ${steamLevel2}` : "Lvl 0"
+                    name: "cs_age",
+                    value: profileAge2
                 }
             ]
         }
