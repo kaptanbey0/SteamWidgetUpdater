@@ -230,26 +230,18 @@ function calculateXpProgress(badgesResponse, fallbackLevel) {
     if (!badgesResponse) return "0 XP (0% to Lvl 1)";
     const playerXp = badgesResponse.player_xp || 0;
     const playerLevel = badgesResponse.player_level || fallbackLevel || 0;
-    const xpNeededCurrentLevel = badgesResponse.player_xp_needed_current_level || 0;
-    const xpNeededToLevelUp = badgesResponse.player_xp_needed_to_level_up || 0;
+
+    const xpForCurrentLevel = getXpRequiredForLevel(playerLevel);
+    const xpForNextLevel = getXpRequiredForLevel(playerLevel + 1);
+    const xpDifference = xpForNextLevel - xpForCurrentLevel;
+    const currentLevelProgressXp = playerXp - xpForCurrentLevel;
 
     let xpProgressPercent = 0;
-    const xpDifference = (xpNeededCurrentLevel + xpNeededToLevelUp) - xpNeededCurrentLevel;
-    const currentLevelProgressXp = playerXp - xpNeededCurrentLevel;
-
     if (xpDifference > 0) {
         xpProgressPercent = Math.max(0, Math.min(100, Math.round((currentLevelProgressXp / xpDifference) * 100)));
-    } else {
-        const nextLevel = playerLevel + 1;
-        const xpForCurrentLevel = getXpRequiredForLevel(playerLevel);
-        const xpForNextLevel = getXpRequiredForLevel(nextLevel);
-        const diff = xpForNextLevel - xpForCurrentLevel;
-        if (diff > 0) {
-            xpProgressPercent = Math.max(0, Math.min(100, Math.round(((playerXp - xpForCurrentLevel) / diff) * 100)));
-        }
     }
 
-    return `${playerXp} XP (${xpProgressPercent}% to Lvl ${playerLevel + 1})`;
+    return `${playerXp.toLocaleString()} XP (${xpProgressPercent}% to Lvl ${playerLevel + 1})`;
 }
 
 
@@ -335,6 +327,7 @@ async function main() {
 
     ]);
 
+    let summary2 = { response: { players: [] } };
     let owned2 = { response: {} };
     let level2 = { response: {} };
     let badges2 = { response: {} };
@@ -342,10 +335,14 @@ async function main() {
     if (steamId2) {
         log("Fetching Steam data for Account 2...");
         const [
+            summary2Raw,
             owned2Raw,
             level2Raw,
             badges2Raw
         ] = await Promise.all([
+            steam(
+                `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${STEAM_API_KEY}&steamids=${steamId2}`
+            ),
             steam(
                 `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${STEAM_API_KEY}&steamid=${steamId2}&include_appinfo=1&include_played_free_games=1`
             ),
@@ -356,6 +353,7 @@ async function main() {
                 `https://api.steampowered.com/IPlayerService/GetBadges/v1/?key=${STEAM_API_KEY}&steamid=${steamId2}`
             )
         ]);
+        summary2 = summary2Raw;
         owned2 = owned2Raw;
         level2 = level2Raw;
         badges2 = badges2Raw;
@@ -365,6 +363,8 @@ async function main() {
 
     const player =
         summary.response.players?.[0];
+    const player2 =
+        summary2.response.players?.[0];
 
     // Account 1 (Main) Parsing
     const games1 = owned.response.games || [];
@@ -396,10 +396,15 @@ async function main() {
     const cs2Hours = Math.round(cs2PlaytimeForever / 60);
     const cs2HoursString = `${cs2Hours.toLocaleString()} Hours`;
 
+    // Display Name with spacing and divider
+    const formattedDisplayName = steamId2 && player2
+        ? `${player?.personaname || "Main"}   |   ${player2.personaname}`
+        : (player?.personaname || "Unknown");
+
     // Console Summary
 
     log("-----------------------------");
-    log(`User: ${player?.personaname}`);
+    log(`User: ${formattedDisplayName}`);
     log(`Main Level: ${steamLevel1}`);
     log(`Main Games: ${ownedGames1}`);
     log(`Main Playtime: ${Math.round(totalMinutes1 / 60)} hours`);
@@ -420,17 +425,17 @@ async function main() {
                 {
                     type: 1,
                     name: "display_name",
-                    value: player?.personaname || "Unknown"
+                    value: formattedDisplayName
                 },
                 {
                     type: 1,
-                    name: "main_level",
-                    value: `Level ${steamLevel1}`
+                    name: "xp_progress_1",
+                    value: xpProgress1
                 },
                 {
                     type: 1,
-                    name: "cs_level",
-                    value: steamId2 ? `Level ${steamLevel2}` : "Level 0"
+                    name: "xp_progress_2",
+                    value: xpProgress2
                 },
                 {
                     type: 1,
@@ -456,8 +461,8 @@ async function main() {
                 },
                 {
                     type: 1,
-                    name: "xp_progress_1",
-                    value: xpProgress1
+                    name: "main_level",
+                    value: `Lvl ${steamLevel1}`
                 },
                 {
                     type: 2,
@@ -471,8 +476,8 @@ async function main() {
                 },
                 {
                     type: 1,
-                    name: "xp_progress_2",
-                    value: xpProgress2
+                    name: "cs_level",
+                    value: steamId2 ? `Lvl ${steamLevel2}` : "Lvl 0"
                 }
             ]
         }
